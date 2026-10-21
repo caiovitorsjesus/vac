@@ -54,7 +54,7 @@ public class Disciplina {
             throw new DominioInvalidoException("A nota máxima deve ser maior que zero.");
         }
         if (mediaMin == null || mediaMin.compareTo(BigDecimal.ZERO) <= 0 || mediaMin.compareTo(notaMax) > 0) {
-            throw new DominioInvalidoException("A média mínima deve ser maior ou igual a zero e menor ou igual à nota máxima.");
+            throw new DominioInvalidoException("A média mínima deve ser maior que zero e no maximo igual à nota máxima.");
         }
     }
 }    

@@ -95,4 +95,17 @@ class DisciplinaTest {
         assertThrows(DominioInvalidoException.class,
                 () -> new Disciplina(NOME, CARGA, PERCENTUAL, new BigDecimal("10.5"), NOTA_MAXIMA));
     }
+
+    @Test
+    void deveRejeitarMediaMinimaZero() {
+        assertThrows(DominioInvalidoException.class,
+                () -> new Disciplina(NOME, CARGA, PERCENTUAL, BigDecimal.ZERO, NOTA_MAXIMA));
+    }
+
+    @Test
+    void deveAceitarMediaMinimaIgualANotaMaxima() {
+        Disciplina disciplina = new Disciplina(NOME, CARGA, PERCENTUAL, new BigDecimal("10.0"), NOTA_MAXIMA);
+
+        assertEquals(0, NOTA_MAXIMA.compareTo(disciplina.getMediaMin()));
+    }
 }
