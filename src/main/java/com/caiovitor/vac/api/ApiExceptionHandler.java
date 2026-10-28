@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.caiovitor.vac.application.exception.ConflitoException;
 import com.caiovitor.vac.application.exception.RecursoNaoEncontradoException;
 import com.caiovitor.vac.domain.exception.ConfiguracaoIncompletaException;
 import com.caiovitor.vac.domain.exception.DominioInvalidoException;
@@ -33,8 +34,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(ConfiguracaoIncompletaException.class)
-    public ProblemDetail tratarConfiguracaoIncompleta(ConfiguracaoIncompletaException ex) {
+    @ExceptionHandler({ConfiguracaoIncompletaException.class, ConflitoException.class})
+    public ProblemDetail tratarConflito(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }
 
