@@ -39,8 +39,12 @@ public class DisciplinaService {
     }
 
     public DisciplinaResponse buscar(Long id) {
-        return repository.findById(id)
-                .map(DisciplinaResponse::de)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Disciplina " + id + " não encontrada."));
+        return DisciplinaResponse.de(buscarEntidade(id));
     }
+
+    public DisciplinaEntity buscarEntidade(Long id) {
+        return repository.findById(id)
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Disciplina " + id + " não encontrada."));
+    }
+
 }
