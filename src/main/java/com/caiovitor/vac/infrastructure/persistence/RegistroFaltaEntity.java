@@ -15,7 +15,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-@Entity 
+/**
+ * Representação da tabela {@code registro_falta}.
+ *
+ * <p>Cada falta pertence a uma disciplina pela coluna {@code disciplina_id}. A relação é carregada
+ * de forma preguiçosa ({@code LAZY}) para que listar faltas não busque a disciplina de cada uma.
+ */
+@Entity
 @Table(name = "registro_falta")
 public class RegistroFaltaEntity {
     @Id
@@ -35,6 +41,7 @@ public class RegistroFaltaEntity {
     @Column(length = 255)
     private String observacao;
 
+    /** Usado apenas pelo JPA ao ler do banco. */
     protected RegistroFaltaEntity() {}
 
     private RegistroFaltaEntity(
@@ -49,6 +56,13 @@ public class RegistroFaltaEntity {
         this.observacao = observacao;
     }
 
+    /**
+     * Cria a entidade ligando uma falta já validada à sua disciplina.
+     *
+     * @param falta      falta validada pelo domínio
+     * @param disciplina disciplina à qual a falta pertence
+     * @return entidade pronta para ser salva, ainda sem id
+     */
     public static RegistroFaltaEntity de(RegistroFalta falta, DisciplinaEntity disciplina) {
         return new RegistroFaltaEntity(
             disciplina,

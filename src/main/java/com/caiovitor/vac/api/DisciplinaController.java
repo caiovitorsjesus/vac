@@ -19,7 +19,10 @@ import com.caiovitor.vac.application.StatusDisciplinaService;
 
 import jakarta.validation.Valid;
 
-@RestController 
+/**
+ * Endpoints de disciplinas: cadastro, consulta e status consolidado.
+ */
+@RestController
 @RequestMapping("/api/disciplinas")
 public class DisciplinaController {
     private final DisciplinaService service;
@@ -30,18 +33,21 @@ public class DisciplinaController {
         this.statusService = statusService;
     }
 
-    @PostMapping 
+    /** Cadastra uma disciplina. Responde 201 com o cabeçalho {@code Location} apontando para ela. */
+    @PostMapping
     public ResponseEntity<DisciplinaResponse> criar(@Valid @RequestBody CriarDisciplinaRequest request){
         DisciplinaResponse criado = service.criar(request);
         URI location = URI.create("/api/disciplinas/" + criado.id());
         return ResponseEntity.created(location).body(criado);
     }
 
+    /** Lista todas as disciplinas. */
     @GetMapping
     public List<DisciplinaResponse> listar(){
         return service.listar();
     }
 
+    /** Consulta uma disciplina. Responde 404 se ela não existir. */
     @GetMapping("/{id}")
     public DisciplinaResponse buscar(@PathVariable Long id ){
         return service.buscar(id);

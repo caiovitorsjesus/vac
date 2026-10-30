@@ -17,6 +17,9 @@ import com.caiovitor.vac.application.FaltaService;
 
 import jakarta.validation.Valid;
 
+/**
+ * Endpoints das faltas de uma disciplina: registro e listagem.
+ */
 @RestController
 @RequestMapping("/api/disciplinas/{disciplinaId}/faltas")
 public class FaltaController {
@@ -27,6 +30,7 @@ public class FaltaController {
         this.service = service;
     }
 
+    /** Registra uma falta. Responde 404 se a disciplina não existir. */
     // 201 sem Location: não existe GET de uma falta individual para onde apontar
     @PostMapping
     public ResponseEntity<FaltaResponse> registrar(@PathVariable Long disciplinaId,
@@ -34,6 +38,7 @@ public class FaltaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(disciplinaId, request));
     }
 
+    /** Lista as faltas da disciplina, da mais antiga para a mais recente. */
     @GetMapping
     public List<FaltaResponse> listar(@PathVariable Long disciplinaId) {
         return service.listar(disciplinaId);

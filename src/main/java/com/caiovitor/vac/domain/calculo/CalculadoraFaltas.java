@@ -9,11 +9,37 @@ import java.util.List;
 import com.caiovitor.vac.domain.model.Disciplina;
 import com.caiovitor.vac.domain.model.RegistroFalta;
 
+/**
+ * Calcula a situação de frequência de uma disciplina a partir das faltas registradas.
+ *
+ * <pre>
+ * limiteHoras         = cargaHorariaTotal × percentualMaxFaltas / 100
+ * horasRestantes      = max(limiteHoras − horasFaltadas, 0)
+ * horasExcedentes     = max(horasFaltadas − limiteHoras, 0)
+ * percentualConsumido = horasFaltadas × 100 / limiteHoras
+ * </pre>
+ *
+ * <p>O status segue as faixas de {@link StatusFaltas}. Atingir exatamente o limite ainda é
+ * {@link StatusFaltas#CRITICO}; a reprovação só ocorre quando ele é ultrapassado.
+ *
+ * <p>Sem estado: a mesma entrada sempre gera o mesmo resultado.
+ */
 public class CalculadoraFaltas {
     private static final BigDecimal CEM = new BigDecimal(100);
     private static final BigDecimal LIMIAR_ATENCAO = new BigDecimal(70);
     private static final BigDecimal LIMIAR_CRITICO = new BigDecimal(90);
 
+    /**
+     * Calcula o limite, a margem, o percentual consumido e o status de frequência.
+     *
+     * <p>O status é decidido com o percentual exato; só o valor devolvido é arredondado
+     * (2 casas, {@code HALF_UP}). Assim, 69,996% é {@code SEGURO}, embora exibido como 70,00%.
+     *
+     * @param disciplina      a disciplina, que já garante limite maior que zero
+     * @param registrosFaltas as faltas registradas; lista vazia significa nenhuma falta
+     * @return o resultado do cálculo
+     * @throws NullPointerException se algum parâmetro for nulo (erro de quem chamou, não do usuário)
+     */
     public ResultadoFaltas calcular(Disciplina disciplina, List<RegistroFalta> registrosFaltas) {
         Objects.requireNonNull(disciplina, "Disciplina não pode ser nula");
         Objects.requireNonNull(registrosFaltas, "Registros de faltas não podem ser nulos");
@@ -27,6 +53,7 @@ public class CalculadoraFaltas {
         BigDecimal horasExcedentes = horasFaltadas.subtract(limiteHoras).max(BigDecimal.ZERO);
         BigDecimal percentualExato = horasFaltadas.multiply(CEM).divide(limiteHoras, MathContext.DECIMAL64);
 
+        // do mais grave para o mais leve: reprovação compara horas (exato), não percentual
         StatusFaltas status;
         if (horasFaltadas.compareTo(limiteHoras) > 0) {
             status = StatusFaltas.REPROVADO_POR_FALTA;

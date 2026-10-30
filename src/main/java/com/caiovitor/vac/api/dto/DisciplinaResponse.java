@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 
 import com.caiovitor.vac.infrastructure.persistence.DisciplinaEntity;
 
+/**
+ * Disciplina devolvida pela API. É o contrato JSON, separado da entidade do banco.
+ */
 public record DisciplinaResponse(
     Long id,
     String nome,
