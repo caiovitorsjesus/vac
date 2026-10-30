@@ -16,7 +16,6 @@ import com.caiovitor.vac.domain.exception.ConfiguracaoIncompletaException;
 import com.caiovitor.vac.domain.model.Avaliacao;
 import com.caiovitor.vac.domain.model.Disciplina;
 import com.caiovitor.vac.domain.model.RegistroFalta;
-import com.caiovitor.vac.infrastructure.persistence.AvaliacaoEntity;
 import com.caiovitor.vac.infrastructure.persistence.AvaliacaoRepository;
 import com.caiovitor.vac.infrastructure.persistence.DisciplinaEntity;
 import com.caiovitor.vac.infrastructure.persistence.RegistroFaltaEntity;
