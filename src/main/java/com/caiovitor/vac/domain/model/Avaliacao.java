@@ -4,11 +4,27 @@ import java.math.BigDecimal;
 
 import com.caiovitor.vac.domain.exception.DominioInvalidoException;
 
+/**
+ * Uma avaliação da disciplina (prova, trabalho...) com seu peso na média final.
+ *
+ * <p>Uma {@code nota} nula significa que a avaliação ainda está pendente, o que é diferente de nota zero:
+ * zero entra na média, pendente não. A regra de que os pesos de uma disciplina somam 100% envolve o
+ * conjunto de avaliações, por isso fica em {@link com.caiovitor.vac.domain.calculo.CalculadoraNotas}.
+ */
 public class Avaliacao {
     private final String nome;
     private final BigDecimal pesoPercentual;
     private final BigDecimal nota;
 
+    /**
+     * Cria uma avaliação validada. O nome é guardado sem espaços nas pontas.
+     *
+     * @param nome           nome da avaliação, obrigatório
+     * @param pesoPercentual peso na média final: maior que 0 e no máximo 100
+     * @param nota           nota obtida, entre 0 e a nota máxima; {@code null} se ainda pendente
+     * @param notaMaxima     nota máxima da disciplina, usada só para validar a nota (não é guardada)
+     * @throws DominioInvalidoException se algum valor violar essas regras
+     */
     public Avaliacao(String nome, BigDecimal pesoPercentual, BigDecimal nota, BigDecimal notaMaxima) {
         validar(nome, pesoPercentual, nota, notaMaxima);
         this.nome = nome.strip();
@@ -43,6 +59,11 @@ public class Avaliacao {
         }
     }
 
+    /**
+     * Indica se a avaliação ainda não tem nota. Concentra aqui a regra "nota nula = pendente".
+     *
+     * @return {@code true} se não houver nota
+     */
     public boolean isPendente() {
         return nota == null;
     }

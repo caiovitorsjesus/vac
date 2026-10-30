@@ -133,6 +133,15 @@ class CalculadoraNotasTest {
     }
 
     @Test
+    void deveExibirPesosDoBancoSemCasasDecimaisNaMensagem() {
+        // o banco devolve os pesos com escala 2 (40.00); a mensagem não deve mostrar "90.00%"
+        ConfiguracaoIncompletaException excecao = assertThrows(ConfiguracaoIncompletaException.class,
+                () -> calculadora.calcular(DISCIPLINA, List.of(corrigida("40.00", "5"), pendente("50.00"))));
+
+        assertEquals("Os pesos somam 90%. Devem somar 100%.", excecao.getMessage());
+    }
+
+    @Test
     void deveRejeitarPesosSomandoMaisDeCem() {
         assertThrows(ConfiguracaoIncompletaException.class,
                 () -> calculadora.calcular(DISCIPLINA, List.of(corrigida("50", "5"), pendente("60"))));

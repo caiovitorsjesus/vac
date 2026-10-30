@@ -4,6 +4,14 @@ import java.math.BigDecimal;
 
 import com.caiovitor.vac.domain.exception.DominioInvalidoException;
 
+/**
+ * Uma matéria e as regras configuradas pelo próprio estudante: carga horária, limite de faltas,
+ * média mínima e nota máxima.
+ *
+ * <p>Imutável e sempre válida: o construtor rejeita qualquer configuração inválida, então quem
+ * recebe uma {@code Disciplina} não precisa validá-la de novo. O limite de faltas nunca é zero,
+ * o que garante que as calculadoras não dividem por zero.
+ */
 public class Disciplina {
     private final String nome;
     private final BigDecimal cargaHorariaTotal;
@@ -11,6 +19,16 @@ public class Disciplina {
     private final BigDecimal mediaMin;
     private final BigDecimal notaMax;
 
+    /**
+     * Cria uma disciplina validada. O nome é guardado sem espaços nas pontas.
+     *
+     * @param nome                nome da matéria, obrigatório
+     * @param cargaHorariaTotal   carga horária em horas, maior que zero
+     * @param percentualMaxFaltas percentual da carga horária que pode ser faltado: maior que 0 e no máximo 100
+     * @param mediaMin            média mínima para aprovação: maior que zero e no máximo a nota máxima
+     * @param notaMax             nota máxima de uma avaliação, maior que zero
+     * @throws DominioInvalidoException se algum valor for nulo ou violar essas regras
+     */
     public Disciplina(String nome, BigDecimal cargaHorariaTotal, BigDecimal percentualMaxFaltas, BigDecimal mediaMin, BigDecimal notaMax) {
         validar(nome, cargaHorariaTotal, percentualMaxFaltas, mediaMin, notaMax);
         this.nome = nome.strip();
