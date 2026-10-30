@@ -5,6 +5,9 @@ import java.time.LocalDate;
 
 import com.caiovitor.vac.infrastructure.persistence.RegistroFaltaEntity;
 
+/**
+ * Falta devolvida pela API. A {@code observacao} é nula quando não foi informada.
+ */
 public record FaltaResponse(
     Long id,
     LocalDate data,

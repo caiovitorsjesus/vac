@@ -11,6 +11,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * Representação da tabela {@code disciplina}.
+ *
+ * <p>Separada de {@link Disciplina} porque o JPA exige construtor vazio e campos mutáveis, o que
+ * desfaria a imutabilidade do domínio. Esta classe só recebe dados que já passaram pelo domínio,
+ * e a conversão de volta ({@link #paraDominio()}) os valida de novo.
+ */
 @Entity
 @Table(name = "disciplina")
 public class DisciplinaEntity {
@@ -33,6 +40,7 @@ public class DisciplinaEntity {
     @Column(nullable = false, precision = 6, scale = 2)
     private BigDecimal notaMaxima;
 
+    /** Usado apenas pelo JPA ao ler do banco. */
     protected DisciplinaEntity(){}
 
     private DisciplinaEntity(
@@ -49,6 +57,12 @@ public class DisciplinaEntity {
         this.notaMaxima = notaMaxima;
     }
     
+    /**
+     * Cria a entidade a partir de uma disciplina de domínio já validada.
+     *
+     * @param disciplina disciplina validada
+     * @return entidade pronta para ser salva, ainda sem id
+     */
     public static DisciplinaEntity de(Disciplina disciplina){
         return new DisciplinaEntity(
             disciplina.getNome(),

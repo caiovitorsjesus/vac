@@ -21,7 +21,21 @@ import com.caiovitor.vac.application.exception.RecursoNaoEncontradoException;
 import com.caiovitor.vac.domain.exception.ConfiguracaoIncompletaException;
 import com.caiovitor.vac.domain.exception.DominioInvalidoException;
 
-@RestControllerAdvice 
+/**
+ * Traduz exceções em respostas HTTP no formato {@code ProblemDetail} (RFC 9457), para todos os controllers.
+ *
+ * <table>
+ *   <caption>Mapeamento de exceções</caption>
+ *   <tr><td>{@link DominioInvalidoException}</td><td>400: dado viola uma regra de negócio</td></tr>
+ *   <tr><td>erros de {@code @Valid}</td><td>400: campo ausente ou fora do formato, com a lista em {@code campos}</td></tr>
+ *   <tr><td>{@link RecursoNaoEncontradoException}</td><td>404</td></tr>
+ *   <tr><td>{@link ConfiguracaoIncompletaException}, {@link ConflitoException}</td><td>409: conflita com o estado salvo</td></tr>
+ * </table>
+ *
+ * <p>Erros do próprio Spring (JSON malformado, método HTTP errado) são tratados pela classe herdada.
+ * Erros inesperados viram 500 sem expor stack trace.
+ */
+@RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     
     @ExceptionHandler(DominioInvalidoException.class)
@@ -39,6 +53,10 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    /**
+     * Inclui no corpo do erro um mapa {@code campos} com cada campo inválido e sua mensagem;
+     * por padrão, o Spring só responderia "Invalid request content".
+     */
     @Override
     protected @Nullable ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
             HttpHeaders headers, HttpStatusCode status, WebRequest request) {
