@@ -58,6 +58,15 @@ public class RegistroFaltaEntity {
         );
     }
 
+    /**
+     * Converte de volta para o domínio. Os dados passam de novo pela validação de {@link RegistroFalta}.
+     *
+     * @return a falta pronta para ser usada pela calculadora de faltas
+     */
+    public RegistroFalta paraDominio() {
+        return new RegistroFalta(data, horas, observacao);
+    }
+
     public Long getId() {
         return id;
     }

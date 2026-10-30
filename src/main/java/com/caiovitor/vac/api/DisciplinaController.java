@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.caiovitor.vac.api.dto.CriarDisciplinaRequest;
 import com.caiovitor.vac.api.dto.DisciplinaResponse;
+import com.caiovitor.vac.api.dto.StatusDisciplinaResponse;
 import com.caiovitor.vac.application.DisciplinaService;
+import com.caiovitor.vac.application.StatusDisciplinaService;
 
 import jakarta.validation.Valid;
 
@@ -21,9 +23,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/disciplinas")
 public class DisciplinaController {
     private final DisciplinaService service;
+    private final StatusDisciplinaService statusService;
 
-    public DisciplinaController(DisciplinaService service) {
+    public DisciplinaController(DisciplinaService service, StatusDisciplinaService statusService) {
         this.service = service;
+        this.statusService = statusService;
     }
 
     @PostMapping 
@@ -41,5 +45,11 @@ public class DisciplinaController {
     @GetMapping("/{id}")
     public DisciplinaResponse buscar(@PathVariable Long id ){
         return service.buscar(id);
+    }
+
+    /** Situação de faltas e projeção de notas da disciplina. */
+    @GetMapping("/{id}/status")
+    public StatusDisciplinaResponse status(@PathVariable Long id) {
+        return statusService.calcular(id);
     }
 }

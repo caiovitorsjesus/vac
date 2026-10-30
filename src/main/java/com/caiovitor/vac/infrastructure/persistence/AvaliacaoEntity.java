@@ -66,6 +66,16 @@ public class AvaliacaoEntity {
     }
 
     /**
+     * Converte de volta para o domínio. Os dados passam de novo pela validação de {@link Avaliacao}.
+     *
+     * @param notaMaxima nota máxima da disciplina, necessária para validar a nota
+     * @return a avaliação pronta para ser usada pela calculadora de notas
+     */
+    public Avaliacao paraDominio(BigDecimal notaMaxima) {
+        return new Avaliacao(nome, pesoPercentual, nota, notaMaxima);
+    }
+
+    /**
      * Registra ou corrige a nota. Não valida: quem chama deve validar a nota pelo domínio antes.
      *
      * @param nota nova nota da avaliação

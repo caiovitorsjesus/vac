@@ -59,6 +59,15 @@ public class DisciplinaEntity {
         );
     }
 
+    /**
+     * Converte de volta para o domínio. Os dados passam de novo pela validação de {@link Disciplina}.
+     *
+     * @return a disciplina pronta para ser usada pelas calculadoras
+     */
+    public Disciplina paraDominio() {
+        return new Disciplina(nome, cargaHorariaTotal, percentualMaximoFaltas, mediaMinima, notaMaxima);
+    }
+
     public Long getId() {
         return id;
     }
