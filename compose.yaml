@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: vac
+      POSTGRES_USER: vac
+      POSTGRES_PASSWORD: vac
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - vac-dados:/var/lib/postgresql
+
+volumes:
+  vac-dados:
