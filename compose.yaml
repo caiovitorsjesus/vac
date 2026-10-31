@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:18
+    # valores lidos do arquivo .env (fora do Git); as variáveis estão listadas no README
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?defina POSTGRES_DB no .env (veja o README)}
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no .env (veja o README)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env (veja o README)}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - vac-dados:/var/lib/postgresql
+
+volumes:
+  vac-dados:
