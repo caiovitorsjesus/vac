@@ -3,6 +3,7 @@
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
 ![Maven](https://img.shields.io/badge/Maven-3.9+-C71A36?logo=apachemaven)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql)
 ![JUnit 5](https://img.shields.io/badge/JUnit-5-25A162?logo=junit5)
 ![Status](https://img.shields.io/badge/status-em%20constru%C3%A7%C3%A3o-yellow)
 
@@ -86,6 +87,8 @@ Média final: **6,5**, igual a (7 + 6) / 2. Modelos de cálculo por instituiçã
 | Entidades JPA separadas do domínio | o JPA exige construtor vazio e campos mutáveis; o domínio continua imutável, e o dado lido do banco é revalidado |
 | Validação em duas camadas | os DTOs checam presença e formato; as regras de negócio ficam só no domínio |
 | Erros no padrão `ProblemDetail` (RFC 9457) | respostas de erro consistentes: 400, 404 e 409, sem stack trace |
+| Esquema versionado com Flyway | cada mudança no banco é um script SQL numerado; o Hibernate só valida que as entidades batem com ele |
+| Credenciais fora do repositório | lidas de um `.env` local (ignorado pelo Git) ou de variáveis de ambiente no servidor |
 
 O raciocínio completo de cada etapa está nos [pull requests](https://github.com/caiovitorsjesus/vac/pulls?q=is%3Apr+is%3Amerged).
 
@@ -93,24 +96,37 @@ O raciocínio completo de cada etapa está nos [pull requests](https://github.co
 
 - **Java 21** (records, streams)
 - **Spring Boot 4.1** (Spring MVC, Bean Validation)
-- **Spring Data JPA** com **H2** em memória
+- **Spring Data JPA** com **PostgreSQL 18**
+- **Flyway** para migrations
+- **Docker Compose** para o banco local
 - **Maven**
 - **JUnit 5**
 
 ## ▶️ Como executar
 
-Pré-requisitos: JDK 21+ e Maven 3.9+.
+Pré-requisitos: JDK 21+, Maven 3.9+ e Docker.
 
 ```bash
 git clone https://github.com/caiovitorsjesus/vac.git
 cd vac
-mvn test              # roda os testes
-mvn spring-boot:run   # sobe a API em http://localhost:8080
 ```
 
-Os testes cobrem as validações do domínio e as calculadoras, incluindo os valores de fronteira de cada regra: limite exato de faltas, faixas de 70% e 90%, nota zero versus avaliação pendente e nota necessária igual à máxima.
+Crie um arquivo `.env` na raiz com as credenciais do banco local:
 
-O banco é H2 em memória: os dados são apagados ao reiniciar. Para ver as tabelas, acesse `http://localhost:8080/h2-console` com a JDBC URL `jdbc:h2:mem:vac`, usuário `sa` e senha em branco.
+```
+POSTGRES_DB=vac
+POSTGRES_USER=vac
+POSTGRES_PASSWORD=escolha-uma-senha
+```
+
+```bash
+mvn test              # roda os testes
+mvn spring-boot:run   # sobe o PostgreSQL no Docker e a API em http://localhost:8080
+```
+
+O `spring-boot:run` sobe o container do banco automaticamente (via `compose.yaml`), e o Flyway cria as tabelas na primeira execução. Os dados ficam num volume do Docker e persistem entre execuções.
+
+Os testes cobrem as validações do domínio e as calculadoras, incluindo os valores de fronteira de cada regra: limite exato de faltas, faixas de 70% e 90%, nota zero versus avaliação pendente e nota necessária igual à máxima.
 
 ## 🔌 API
 
@@ -168,6 +184,8 @@ src/main/java/com/caiovitor/vac
 │   ├── calculo/      CalculadoraFaltas, CalculadoraNotas e seus resultados
 │   └── exception/    exceções de domínio
 └── infrastructure/   entidades JPA e repositórios
+
+src/main/resources/db/migration   scripts SQL do Flyway (V1__, V2__...)
 ```
 
 As dependências apontam para dentro: `domain` não conhece nenhuma outra camada.
@@ -178,7 +196,7 @@ As dependências apontam para dentro: `domain` não conhece nenhuma outra camada
 - [x] Cálculo de faltas
 - [x] Projeção de notas
 - [x] API REST com Spring Boot
-- [ ] Persistência com PostgreSQL
+- [x] Persistência com PostgreSQL
 - [ ] Testes de integração da API
 - [ ] Interface web
 - [ ] Modelos de cálculo por instituição (unidades, recuperação, exame final)
