@@ -1,9 +1,9 @@
 import { Trash2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { api, ApiErro } from '../api/cliente'
+import { api } from '../api/cliente'
 import type { Disciplina, DisciplinaForm } from '../api/tipos'
 import { classeBotaoPrimario, classeBotaoSecundario, lerNumero, paraCampo } from '../formulario'
-import { useToast } from '../toast/contexto'
+import { useEnvio } from '../hooks/useEnvio'
 import { Campo, ErroFormulario } from './campos'
 import { Modal } from './Modal'
 
@@ -43,38 +43,15 @@ function Formulario({ disciplina, aoFechar, aoSalvar }: {
   aoFechar: () => void
   aoSalvar: () => void
 }) {
-  const mostrarToast = useToast()
   const [valores, setValores] = useState<Campos>(disciplina ? deDisciplina(disciplina) : vazio)
-  const [erros, setErros] = useState<Partial<Campos>>({})
-  const [erroGeral, setErroGeral] = useState<string | null>(null)
-  const [enviando, setEnviando] = useState(false)
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
+  const { erros, erroGeral, enviando, executar } = useEnvio(() => {
+    aoSalvar()
+    aoFechar()
+  })
 
   const alterar = (campo: keyof Campos) => (e: { target: { value: string } }) =>
     setValores((v) => ({ ...v, [campo]: e.target.value }))
-
-  async function executar(acao: () => Promise<unknown>, mensagemSucesso: string) {
-    setEnviando(true)
-    setErros({})
-    setErroGeral(null)
-    try {
-      await acao()
-      mostrarToast(mensagemSucesso)
-      aoSalvar()
-      aoFechar()
-    } catch (e) {
-      if (e instanceof ApiErro) {
-        setErros(e.campos)
-        // com erros por campo, eles já aparecem embaixo de cada input; senão, a mensagem vai no topo
-        setErroGeral(Object.keys(e.campos).length > 0 ? null : e.message)
-      } else {
-        setErroGeral('Erro inesperado. Tente novamente.')
-      }
-      setConfirmandoExclusao(false)
-    } finally {
-      setEnviando(false)
-    }
-  }
 
   function salvar(e: FormEvent) {
     e.preventDefault()

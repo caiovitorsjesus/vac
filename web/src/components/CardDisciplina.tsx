@@ -1,13 +1,19 @@
-import { CircleSlash, Info, PartyPopper, SlidersHorizontal, Target } from 'lucide-react'
+import { CircleSlash, FilePenLine, Info, PartyPopper, Plus, SlidersHorizontal, Target } from 'lucide-react'
 import type { Disciplina, ProjecaoNotas, SituacaoFaltas } from '../api/tipos'
 import { horas, horasPorExtenso, numero } from '../formatar'
+import { classeBotaoSecundario } from '../formulario'
 import type { ItemPainel } from '../hooks/usePainel'
 import { BarraFaltas } from './BarraFaltas'
 import { estiloDoStatus } from './estiloStatus'
 import { SeloStatus } from './SeloStatus'
 
 /** Card de uma disciplina no painel. Só exibe o que o /status calculou; não há regra de cálculo aqui. */
-export function CardDisciplina({ item, aoAbrirRegras }: { item: ItemPainel; aoAbrirRegras: () => void }) {
+export function CardDisciplina({ item, aoAbrirRegras, aoRegistrarFalta, aoNovaAvaliacao }: {
+  item: ItemPainel
+  aoAbrirRegras: () => void
+  aoRegistrarFalta: () => void
+  aoNovaAvaliacao: () => void
+}) {
   const { disciplina, status } = item
 
   return (
@@ -25,6 +31,16 @@ export function CardDisciplina({ item, aoAbrirRegras }: { item: ItemPainel; aoAb
       </div>
       <ResumoFaltas faltas={status.faltas} />
       <ResumoNotas notas={status.notas} aviso={status.avisoNotas} disciplina={disciplina} />
+      <div className="mt-auto grid grid-cols-2 gap-3">
+        <button type="button" onClick={aoRegistrarFalta} className={classeBotaoSecundario}
+          aria-label={`Registrar falta em ${disciplina.nome}`}>
+          <Plus className="size-4" aria-hidden /> Registrar falta
+        </button>
+        <button type="button" onClick={aoNovaAvaliacao} className={classeBotaoSecundario}
+          aria-label={`Nova avaliação em ${disciplina.nome}`}>
+          <FilePenLine className="size-4" aria-hidden /> Avaliação
+        </button>
+      </div>
     </article>
   )
 }

@@ -4,6 +4,12 @@ export function lerNumero(texto: string): number | null {
   return limpo === '' ? null : Number(limpo)
 }
 
+/**
+ * Data de hoje no fuso do usuário, no formato da API ("2026-11-02").
+ * toISOString() usaria UTC: no Brasil, depois das 21h, daria amanhã e a API recusaria como data futura.
+ */
+export const hoje = () => new Date().toLocaleDateString('sv-SE')
+
 /** Número vindo da API para dentro de um campo de texto: 7.5 → "7,5". */
 export const paraCampo = (valor: number) => String(valor).replace('.', ',')
 

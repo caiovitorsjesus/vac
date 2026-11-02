@@ -3,12 +3,17 @@ import { useState } from 'react'
 import type { Disciplina } from '../api/tipos'
 import { CardDisciplina } from '../components/CardDisciplina'
 import { LegendaSelos } from '../components/LegendaSelos'
+import { ModalAvaliacao } from '../components/ModalAvaliacao'
 import { ModalDisciplina } from '../components/ModalDisciplina'
+import { ModalFalta } from '../components/ModalFalta'
 import { classeBotaoPrimario, classeBotaoSecundario } from '../formulario'
 import { usePainel } from '../hooks/usePainel'
 
-/** Qual modal está aberto: cadastro, regras de uma disciplina, ou nenhum. */
-type ModalAberto = { tipo: 'nova' } | { tipo: 'regras'; disciplina: Disciplina } | null
+/** Qual modal está aberto, e para qual disciplina. */
+type ModalAberto =
+  | { tipo: 'nova' }
+  | { tipo: 'regras' | 'falta' | 'avaliacao'; disciplina: Disciplina }
+  | null
 
 /** Tela inicial: um card por disciplina com a situação de faltas e notas. */
 export function Painel() {
@@ -67,6 +72,8 @@ export function Painel() {
                 key={item.disciplina.id}
                 item={item}
                 aoAbrirRegras={() => setModal({ tipo: 'regras', disciplina: item.disciplina })}
+                aoRegistrarFalta={() => setModal({ tipo: 'falta', disciplina: item.disciplina })}
+                aoNovaAvaliacao={() => setModal({ tipo: 'avaliacao', disciplina: item.disciplina })}
               />
             ))}
           </div>
@@ -75,8 +82,18 @@ export function Painel() {
       )}
 
       <ModalDisciplina
-        aberto={modal !== null}
+        aberto={modal?.tipo === 'nova' || modal?.tipo === 'regras'}
         disciplina={modal?.tipo === 'regras' ? modal.disciplina : undefined}
+        aoFechar={() => setModal(null)}
+        aoSalvar={recarregar}
+      />
+      <ModalFalta
+        disciplina={modal?.tipo === 'falta' ? modal.disciplina : null}
+        aoFechar={() => setModal(null)}
+        aoSalvar={recarregar}
+      />
+      <ModalAvaliacao
+        disciplina={modal?.tipo === 'avaliacao' ? modal.disciplina : null}
         aoFechar={() => setModal(null)}
         aoSalvar={recarregar}
       />
