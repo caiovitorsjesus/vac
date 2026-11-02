@@ -74,6 +74,20 @@ public class DisciplinaEntity {
     }
 
     /**
+     * Substitui as regras pelas de uma disciplina de domínio já validada. Não valida:
+     * quem chama deve validar pelo domínio e conferir as notas já lançadas antes.
+     *
+     * @param disciplina disciplina validada com as novas regras
+     */
+    public void atualizar(Disciplina disciplina) {
+        this.nome = disciplina.getNome();
+        this.cargaHorariaTotal = disciplina.getCargaHorariaTotal();
+        this.percentualMaximoFaltas = disciplina.getPercentualMaxFaltas();
+        this.mediaMinima = disciplina.getMediaMin();
+        this.notaMaxima = disciplina.getNotaMax();
+    }
+
+    /**
      * Converte de volta para o domínio. Os dados passam de novo pela validação de {@link Disciplina}.
      *
      * @return a disciplina pronta para ser usada pelas calculadoras

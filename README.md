@@ -21,7 +21,7 @@ O vac é um organizador e simulador: as regras (limite de faltas, média mínima
 - **Notas:** pontos já garantidos, peso restante e a nota necessária nas avaliações pendentes para atingir a média
 - **Viabilidade:** distingue "ainda dá para passar" de "a nota necessária passa da nota máxima"
 - **Validação no domínio:** dados inválidos (carga horária zero, nota acima da máxima, falta em data futura) são rejeitados na criação
-- **API REST:** cadastro de disciplinas, faltas e avaliações, lançamento de notas e um status consolidado, com erros padronizados
+- **API REST:** cadastro, edição e exclusão de disciplinas, registro de faltas e avaliações, lançamento de notas e um status consolidado, com erros padronizados
 
 ## 📐 Regras de cálculo
 
@@ -132,7 +132,7 @@ O `spring-boot:run` sobe o container do banco automaticamente (via `compose.yaml
 | Tipo | O que cobre | Precisa de |
 |---|---|---|
 | **Unitários** (`domain`) | validações das entidades e as calculadoras, incluindo os valores de fronteira de cada regra: limite exato de faltas, faixas de 70% e 90%, nota zero versus avaliação pendente, nota necessária igual à máxima | nada além do Java |
-| **Integração** (`api`) | cada endpoint de ponta a ponta, do HTTP ao banco: caminhos de sucesso, erros de validação (400), recursos inexistentes (404), conflito de pesos (409) e os números do exemplo do guia no status | Docker rodando |
+| **Integração** (`api`) | cada endpoint de ponta a ponta, do HTTP ao banco: caminhos de sucesso, erros de validação (400), recursos inexistentes (404), conflitos (409) e os números do exemplo do guia no status | Docker rodando |
 
 Os testes de integração sobem um PostgreSQL temporário com o [Testcontainers](https://testcontainers.com/), aplicam as mesmas migrations do Flyway e apagam o container no final.
 
@@ -148,6 +148,8 @@ mvn test -Dtest='com.caiovitor.vac.domain.**'   # só os unitários (sem Docker)
 | `POST` | `/api/disciplinas` | cadastra uma disciplina |
 | `GET` | `/api/disciplinas` | lista as disciplinas |
 | `GET` | `/api/disciplinas/{id}` | consulta uma disciplina |
+| `PUT` | `/api/disciplinas/{id}` | edita as regras de uma disciplina |
+| `DELETE` | `/api/disciplinas/{id}` | exclui uma disciplina com suas faltas e avaliações |
 | `POST` | `/api/disciplinas/{id}/faltas` | registra uma falta |
 | `GET` | `/api/disciplinas/{id}/faltas` | lista as faltas |
 | `POST` | `/api/disciplinas/{id}/avaliacoes` | cadastra uma avaliação, com ou sem nota |
@@ -155,7 +157,7 @@ mvn test -Dtest='com.caiovitor.vac.domain.**'   # só os unitários (sem Docker)
 | `PATCH` | `/api/disciplinas/{id}/avaliacoes/{avaliacaoId}/nota` | registra ou corrige uma nota |
 | `GET` | `/api/disciplinas/{id}/status` | situação de faltas e projeção de notas |
 
-Erros seguem o formato `ProblemDetail`: **400** para dado inválido (com a lista de `campos` quando o formato está errado), **404** para recurso inexistente e **409** quando os pesos passariam de 100%.
+Erros seguem o formato `ProblemDetail`: **400** para dado inválido (com a lista de `campos` quando o formato está errado), **404** para recurso inexistente e **409** quando a operação conflita com dados já salvos (pesos que passariam de 100% ou nota máxima abaixo de uma nota já lançada).
 
 <details>
 <summary><b>Exemplo completo com curl</b></summary>

@@ -1,18 +1,22 @@
 package com.caiovitor.vac.application;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.caiovitor.vac.api.dto.CriarDisciplinaRequest;
 import com.caiovitor.vac.api.dto.DisciplinaResponse;
+import com.caiovitor.vac.application.exception.ConflitoException;
 import com.caiovitor.vac.application.exception.RecursoNaoEncontradoException;
 import com.caiovitor.vac.domain.model.Disciplina;
+import com.caiovitor.vac.infrastructure.persistence.AvaliacaoRepository;
 import com.caiovitor.vac.infrastructure.persistence.DisciplinaEntity;
 import com.caiovitor.vac.infrastructure.persistence.DisciplinaRepository;
 
 /**
- * Orquestra o cadastro e a consulta de disciplinas.
+ * Orquestra o cadastro, a consulta e a edição de disciplinas.
  *
  * <p>Também é o ponto único da regra "disciplina inexistente responde 404", reutilizada
  * pelos services de faltas, avaliações e status por meio de {@link #buscarEntidade(Long)}.
@@ -21,9 +25,12 @@ import com.caiovitor.vac.infrastructure.persistence.DisciplinaRepository;
 public class DisciplinaService {
 
     private final DisciplinaRepository repository;
+    // o repositório, e não o AvaliacaoService: este já depende do DisciplinaService (evita dependência circular)
+    private final AvaliacaoRepository avaliacaoRepository;
 
-    public DisciplinaService(DisciplinaRepository repository) {
+    public DisciplinaService(DisciplinaRepository repository, AvaliacaoRepository avaliacaoRepository) {
         this.repository = repository;
+        this.avaliacaoRepository = avaliacaoRepository;
     }
 
     /**
@@ -34,14 +41,7 @@ public class DisciplinaService {
      * @throws com.caiovitor.vac.domain.exception.DominioInvalidoException se os dados violarem as regras de {@link Disciplina}
      */
     public DisciplinaResponse criar(CriarDisciplinaRequest request) {
-        Disciplina disciplina = new Disciplina(
-                request.nome(),
-                request.cargaHorariaTotal(),
-                request.percentualMaximoFaltas(),
-                request.mediaMinima(),
-                request.notaMaxima());
-
-        DisciplinaEntity salva = repository.save(DisciplinaEntity.de(disciplina));
+        DisciplinaEntity salva = repository.save(DisciplinaEntity.de(paraDominio(request)));
         return DisciplinaResponse.de(salva);
     }
 
@@ -62,6 +62,50 @@ public class DisciplinaService {
     }
 
     /**
+     * Substitui as regras de uma disciplina. A alteração é gravada ao fim da transação.
+     *
+     * <p>Uma nova nota máxima não pode ficar abaixo de uma nota já lançada: isso deixaria
+     * avaliações inválidas no banco.
+     *
+     * @param id      id da disciplina
+     * @param request as novas regras, completas
+     * @return a disciplina atualizada
+     * @throws RecursoNaoEncontradoException se a disciplina não existir
+     * @throws com.caiovitor.vac.domain.exception.DominioInvalidoException se as regras forem inválidas
+     * @throws ConflitoException se alguma nota lançada passar da nova nota máxima
+     */
+    @Transactional
+    public DisciplinaResponse atualizar(Long id, CriarDisciplinaRequest request) {
+        DisciplinaEntity entidade = buscarEntidade(id);
+        Disciplina disciplina = paraDominio(request);
+
+        avaliacaoRepository.findByDisciplinaIdOrderByIdAsc(id).stream()
+                .filter(avaliacao -> avaliacao.getNota() != null
+                        && avaliacao.getNota().compareTo(disciplina.getNotaMax()) > 0)
+                .findFirst()
+                .ifPresent(avaliacao -> {
+                    throw new ConflitoException("A avaliação " + avaliacao.getNome() + " tem nota "
+                            + formatar(avaliacao.getNota()) + ", acima da nova nota máxima "
+                            + formatar(disciplina.getNotaMax()) + ".");
+                });
+
+        entidade.atualizar(disciplina);
+        return DisciplinaResponse.de(entidade);
+    }
+
+    /**
+     * Exclui a disciplina. As faltas e avaliações dela são excluídas pelo banco
+     * ({@code ON DELETE CASCADE}, migration V2), na mesma operação.
+     *
+     * @param id id da disciplina
+     * @throws RecursoNaoEncontradoException se a disciplina não existir
+     */
+    @Transactional
+    public void excluir(Long id) {
+        repository.delete(buscarEntidade(id));
+    }
+
+    /**
      * Busca a entidade da disciplina, para os services que precisam ligar registros a ela.
      *
      * @param id id da disciplina
@@ -73,4 +117,17 @@ public class DisciplinaService {
             .orElseThrow(() -> new RecursoNaoEncontradoException("Disciplina " + id + " não encontrada."));
     }
 
+    private static Disciplina paraDominio(CriarDisciplinaRequest request) {
+        return new Disciplina(
+                request.nome(),
+                request.cargaHorariaTotal(),
+                request.percentualMaximoFaltas(),
+                request.mediaMinima(),
+                request.notaMaxima());
+    }
+
+    // notas vindas do banco têm 2 casas (8.00); na mensagem, "8" é mais legível
+    private static String formatar(BigDecimal valor) {
+        return valor.stripTrailingZeros().toPlainString();
+    }
 }
