@@ -1,17 +1,34 @@
-import { BookOpen, RotateCw } from 'lucide-react'
+import { BookOpen, Plus, RotateCw } from 'lucide-react'
+import { useState } from 'react'
+import type { Disciplina } from '../api/tipos'
 import { CardDisciplina } from '../components/CardDisciplina'
 import { LegendaSelos } from '../components/LegendaSelos'
+import { ModalDisciplina } from '../components/ModalDisciplina'
+import { classeBotaoPrimario, classeBotaoSecundario } from '../formulario'
 import { usePainel } from '../hooks/usePainel'
+
+/** Qual modal está aberto: cadastro, regras de uma disciplina, ou nenhum. */
+type ModalAberto = { tipo: 'nova' } | { tipo: 'regras'; disciplina: Disciplina } | null
 
 /** Tela inicial: um card por disciplina com a situação de faltas e notas. */
 export function Painel() {
   const { estado, recarregar } = usePainel()
+  const [modal, setModal] = useState<ModalAberto>(null)
+
+  const botaoNova = (
+    <button type="button" onClick={() => setModal({ tipo: 'nova' })} className={classeBotaoPrimario}>
+      <Plus className="size-4" aria-hidden /> Nova disciplina
+    </button>
+  )
 
   return (
     <>
-      <header className="mb-8">
-        <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">Seu semestre em dia.</h1>
-        <p className="mt-1 text-muted-foreground">Mais clareza nas faltas. Mais tranquilidade nas notas.</p>
+      <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">Seu semestre em dia.</h1>
+          <p className="mt-1 text-muted-foreground">Mais clareza nas faltas. Mais tranquilidade nas notas.</p>
+        </div>
+        {botaoNova}
       </header>
 
       {estado.tipo === 'carregando' && <Esqueleto />}
@@ -19,11 +36,7 @@ export function Painel() {
       {estado.tipo === 'erro' && (
         <div role="alert" className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card py-12 text-center">
           <p className="text-muted-foreground">{estado.mensagem}</p>
-          <button
-            type="button"
-            onClick={recarregar}
-            className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-semibold text-primary hover:bg-secondary"
-          >
+          <button type="button" onClick={recarregar} className={classeBotaoSecundario}>
             <RotateCw className="size-4" aria-hidden /> Tentar novamente
           </button>
         </div>
@@ -35,9 +48,10 @@ export function Painel() {
             <BookOpen className="size-10 text-primary" aria-hidden />
           </div>
           <h2 className="text-xl font-bold">Nenhuma disciplina por aqui ainda</h2>
-          <p className="mt-2 max-w-sm text-muted-foreground">
+          <p className="mb-6 mt-2 max-w-sm text-muted-foreground">
             Cadastre sua primeira matéria e o vac faz as contas de faltas e notas por você.
           </p>
+          {botaoNova}
         </div>
       )}
 
@@ -49,12 +63,23 @@ export function Painel() {
           </h2>
           <div className="grid gap-5 md:grid-cols-2">
             {estado.itens.map((item) => (
-              <CardDisciplina key={item.disciplina.id} item={item} />
+              <CardDisciplina
+                key={item.disciplina.id}
+                item={item}
+                aoAbrirRegras={() => setModal({ tipo: 'regras', disciplina: item.disciplina })}
+              />
             ))}
           </div>
           <LegendaSelos />
         </>
       )}
+
+      <ModalDisciplina
+        aberto={modal !== null}
+        disciplina={modal?.tipo === 'regras' ? modal.disciplina : undefined}
+        aoFechar={() => setModal(null)}
+        aoSalvar={recarregar}
+      />
     </>
   )
 }

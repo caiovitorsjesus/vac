@@ -1,4 +1,4 @@
-import { CircleSlash, Info, PartyPopper, Target } from 'lucide-react'
+import { CircleSlash, Info, PartyPopper, SlidersHorizontal, Target } from 'lucide-react'
 import type { Disciplina, ProjecaoNotas, SituacaoFaltas } from '../api/tipos'
 import { horas, horasPorExtenso, numero } from '../formatar'
 import type { ItemPainel } from '../hooks/usePainel'
@@ -7,12 +7,22 @@ import { estiloDoStatus } from './estiloStatus'
 import { SeloStatus } from './SeloStatus'
 
 /** Card de uma disciplina no painel. Só exibe o que o /status calculou; não há regra de cálculo aqui. */
-export function CardDisciplina({ item }: { item: ItemPainel }) {
+export function CardDisciplina({ item, aoAbrirRegras }: { item: ItemPainel; aoAbrirRegras: () => void }) {
   const { disciplina, status } = item
 
   return (
     <article className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-5 shadow-card md:p-6">
-      <h2 className="text-lg font-semibold">{disciplina.nome}</h2>
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-lg font-semibold">{disciplina.nome}</h2>
+        <button
+          type="button"
+          onClick={aoAbrirRegras}
+          aria-label={`Regras de ${disciplina.nome}`}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <SlidersHorizontal className="size-4" aria-hidden /> Regras
+        </button>
+      </div>
       <ResumoFaltas faltas={status.faltas} />
       <ResumoNotas notas={status.notas} aviso={status.avisoNotas} disciplina={disciplina} />
     </article>
