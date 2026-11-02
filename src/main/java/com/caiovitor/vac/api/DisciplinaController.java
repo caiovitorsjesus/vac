@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,6 +55,15 @@ public class DisciplinaController {
     }
 
     /** Situação de faltas e projeção de notas da disciplina. */
+    /**
+     * Substitui as regras da disciplina. Responde 409 se a nova nota máxima ficar abaixo
+     * de uma nota já lançada.
+     */
+    @PutMapping("/{id}")
+    public DisciplinaResponse atualizar(@PathVariable Long id, @Valid @RequestBody CriarDisciplinaRequest request) {
+        return service.atualizar(id, request);
+    }
+
     @GetMapping("/{id}/status")
     public StatusDisciplinaResponse status(@PathVariable Long id) {
         return statusService.calcular(id);
