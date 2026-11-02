@@ -23,25 +23,29 @@ const deDisciplina = (d: Disciplina): Campos => ({
  * Cadastro (sem `disciplina`) ou edição das regras (com `disciplina`, incluindo a exclusão).
  * As regras são validadas pela API; o formulário exibe os erros que ela devolve.
  */
-export function ModalDisciplina({ aberto, disciplina, aoFechar, aoSalvar }: {
+export function ModalDisciplina({ aberto, disciplina, aoFechar, aoSalvar, aoExcluir = aoSalvar }: {
   aberto: boolean
   disciplina?: Disciplina
   aoFechar: () => void
-  /** Chamado depois de criar, editar ou excluir com sucesso, para a tela recarregar. */
+  /** Chamado depois de criar ou editar com sucesso, para a tela recarregar. */
   aoSalvar: () => void
+  /** Chamado depois de excluir; por padrão, igual a `aoSalvar`. O detalhe usa para voltar ao painel. */
+  aoExcluir?: () => void
 }) {
   return (
     <Modal aberto={aberto} titulo={disciplina ? `Regras de ${disciplina.nome}` : 'Nova disciplina'} aoFechar={aoFechar}>
       {/* a key recria o formulário (e limpa o estado) a cada abertura ou troca de disciplina */}
-      <Formulario key={`${aberto}-${disciplina?.id}`} disciplina={disciplina} aoFechar={aoFechar} aoSalvar={aoSalvar} />
+      <Formulario key={`${aberto}-${disciplina?.id}`} disciplina={disciplina} aoFechar={aoFechar} aoSalvar={aoSalvar}
+        aoExcluir={aoExcluir} />
     </Modal>
   )
 }
 
-function Formulario({ disciplina, aoFechar, aoSalvar }: {
+function Formulario({ disciplina, aoFechar, aoSalvar, aoExcluir }: {
   disciplina?: Disciplina
   aoFechar: () => void
   aoSalvar: () => void
+  aoExcluir: () => void
 }) {
   const [valores, setValores] = useState<Campos>(disciplina ? deDisciplina(disciplina) : vazio)
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
@@ -82,7 +86,10 @@ function Formulario({ disciplina, aoFechar, aoSalvar }: {
           <button
             type="button"
             disabled={enviando}
-            onClick={() => executar(() => api.excluirDisciplina(disciplina.id), 'Disciplina excluída')}
+            onClick={() => executar(() => api.excluirDisciplina(disciplina.id), 'Disciplina excluída', () => {
+              aoFechar()
+              aoExcluir()
+            })}
             className="inline-flex items-center gap-2 rounded-xl bg-over-bar px-4 py-2.5 text-sm font-semibold text-card hover:opacity-90 disabled:opacity-60"
           >
             <Trash2 className="size-4" aria-hidden /> Excluir
