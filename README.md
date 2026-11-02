@@ -88,6 +88,7 @@ Média final: **6,5**, igual a (7 + 6) / 2. Modelos de cálculo por instituiçã
 | Validação em duas camadas | os DTOs checam presença e formato; as regras de negócio ficam só no domínio |
 | Erros no padrão `ProblemDetail` (RFC 9457) | respostas de erro consistentes: 400, 404 e 409, sem stack trace |
 | Esquema versionado com Flyway | cada mudança no banco é um script SQL numerado; o Hibernate só valida que as entidades batem com ele |
+| Testes de integração no PostgreSQL real | os testes rodam no mesmo banco e com as mesmas migrations da aplicação, sem as diferenças de um banco em memória |
 | Credenciais fora do repositório | lidas de um `.env` local (ignorado pelo Git) ou de variáveis de ambiente no servidor |
 
 O raciocínio completo de cada etapa está nos [pull requests](https://github.com/caiovitorsjesus/vac/pulls?q=is%3Apr+is%3Amerged).
@@ -100,7 +101,7 @@ O raciocínio completo de cada etapa está nos [pull requests](https://github.co
 - **Flyway** para migrations
 - **Docker Compose** para o banco local
 - **Maven**
-- **JUnit 5**
+- **JUnit 5** e **Testcontainers**
 
 ## ▶️ Como executar
 
@@ -120,13 +121,25 @@ POSTGRES_PASSWORD=escolha-uma-senha
 ```
 
 ```bash
-mvn test              # roda os testes
+mvn test              # roda os testes (os de integração precisam do Docker rodando)
 mvn spring-boot:run   # sobe o PostgreSQL no Docker e a API em http://localhost:8080
 ```
 
 O `spring-boot:run` sobe o container do banco automaticamente (via `compose.yaml`), e o Flyway cria as tabelas na primeira execução. Os dados ficam num volume do Docker e persistem entre execuções.
 
-Os testes cobrem as validações do domínio e as calculadoras, incluindo os valores de fronteira de cada regra: limite exato de faltas, faixas de 70% e 90%, nota zero versus avaliação pendente e nota necessária igual à máxima.
+## 🧪 Testes
+
+| Tipo | O que cobre | Precisa de |
+|---|---|---|
+| **Unitários** (`domain`) | validações das entidades e as calculadoras, incluindo os valores de fronteira de cada regra: limite exato de faltas, faixas de 70% e 90%, nota zero versus avaliação pendente, nota necessária igual à máxima | nada além do Java |
+| **Integração** (`api`) | cada endpoint de ponta a ponta, do HTTP ao banco: caminhos de sucesso, erros de validação (400), recursos inexistentes (404), conflito de pesos (409) e os números do exemplo do guia no status | Docker rodando |
+
+Os testes de integração sobem um PostgreSQL temporário com o [Testcontainers](https://testcontainers.com/), aplicam as mesmas migrations do Flyway e apagam o container no final.
+
+```bash
+mvn test                                # todos
+mvn test -Dtest='com.caiovitor.vac.domain.**'   # só os unitários (sem Docker)
+```
 
 ## 🔌 API
 
@@ -197,7 +210,7 @@ As dependências apontam para dentro: `domain` não conhece nenhuma outra camada
 - [x] Projeção de notas
 - [x] API REST com Spring Boot
 - [x] Persistência com PostgreSQL
-- [ ] Testes de integração da API
+- [x] Testes de integração da API
 - [ ] Interface web
 - [ ] Modelos de cálculo por instituição (unidades, recuperação, exame final)
 
