@@ -24,7 +24,7 @@ function Formulario({ disciplina, aoFechar, aoSalvar }: { disciplina: Disciplina
   const [nome, setNome] = useState('')
   const [peso, setPeso] = useState('')
   const [nota, setNota] = useState('')
-  const { erros, erroGeral, enviando, executar } = useEnvio(() => {
+  const { formulario, erros, erroGeral, enviando, executar } = useEnvio(() => {
     aoSalvar()
     aoFechar()
   })
@@ -43,7 +43,7 @@ function Formulario({ disciplina, aoFechar, aoSalvar }: { disciplina: Disciplina
   }
 
   return (
-    <form onSubmit={salvar} noValidate className="space-y-4">
+    <form ref={formulario} onSubmit={salvar} noValidate className="space-y-4">
       <ErroFormulario mensagem={erroGeral} />
       <Campo id="avaliacao-nome" rotulo="Nome" value={nome} placeholder="P1"
         onChange={(e) => setNome(e.target.value)} erro={erros.nome} />

@@ -15,7 +15,7 @@ export function Campo({ id, rotulo, erro, ajuda, ...input }: {
         id={id}
         aria-invalid={erro ? true : undefined}
         aria-describedby={idDescricao}
-        className="w-full rounded-xl border border-border bg-card px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 aria-invalid:border-over-bar"
+        className="min-h-11 w-full rounded-xl border border-border bg-card px-3 py-2 tabular-nums outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 aria-invalid:border-over-bar"
         {...input}
       />
       {erro
@@ -28,5 +28,6 @@ export function Campo({ id, rotulo, erro, ajuda, ...input }: {
 /** Mensagem de erro geral do formulário (o detail da API). */
 export function ErroFormulario({ mensagem }: { mensagem: string | null }) {
   if (!mensagem) return null
-  return <p role="alert" className="rounded-xl bg-over px-3 py-2 text-sm text-over-foreground">{mensagem}</p>
+  // tabIndex -1: recebe o foco depois de um envio com erro, sem entrar na ordem do Tab
+  return <p role="alert" tabIndex={-1} className="rounded-xl bg-over px-3 py-2 text-sm text-over-foreground">{mensagem}</p>
 }

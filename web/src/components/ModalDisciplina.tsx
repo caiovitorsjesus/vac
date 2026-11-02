@@ -45,7 +45,7 @@ function Formulario({ disciplina, aoFechar, aoSalvar }: {
 }) {
   const [valores, setValores] = useState<Campos>(disciplina ? deDisciplina(disciplina) : vazio)
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
-  const { erros, erroGeral, enviando, executar } = useEnvio(() => {
+  const { formulario, erros, erroGeral, enviando, executar } = useEnvio(() => {
     aoSalvar()
     aoFechar()
   })
@@ -71,7 +71,7 @@ function Formulario({ disciplina, aoFechar, aoSalvar }: {
 
   if (confirmandoExclusao && disciplina) {
     return (
-      <div className="space-y-5">
+      <div ref={formulario} className="space-y-5">
         <p>
           Excluir <strong>{disciplina.nome}</strong>? As faltas e avaliações dela também serão apagadas.
           Essa ação não pode ser desfeita.
@@ -93,7 +93,7 @@ function Formulario({ disciplina, aoFechar, aoSalvar }: {
   }
 
   return (
-    <form onSubmit={salvar} noValidate className="space-y-4">
+    <form ref={formulario} onSubmit={salvar} noValidate className="space-y-4">
       <ErroFormulario mensagem={erroGeral} />
       <Campo id="nome" rotulo="Nome" value={valores.nome} onChange={alterar('nome')} erro={erros.nome} placeholder="Cálculo I" />
       <div className="grid gap-4 sm:grid-cols-2">

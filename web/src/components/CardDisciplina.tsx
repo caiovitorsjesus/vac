@@ -19,12 +19,12 @@ export function CardDisciplina({ item, aoAbrirRegras, aoRegistrarFalta, aoNovaAv
   return (
     <article className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-5 shadow-card md:p-6">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-lg font-semibold">{disciplina.nome}</h2>
+        <h3 className="text-lg font-semibold">{disciplina.nome}</h3>
         <button
           type="button"
           onClick={aoAbrirRegras}
           aria-label={`Regras de ${disciplina.nome}`}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <SlidersHorizontal className="size-4" aria-hidden /> Regras
         </button>
@@ -59,7 +59,7 @@ function ResumoFaltas({ faltas }: { faltas: SituacaoFaltas }) {
     <div className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <p>
-          <span className={`text-3xl font-semibold ${acimaDoLimite ? estiloDoStatus[faltas.status].destaque : ''}`}>
+          <span className={`text-3xl font-semibold tabular-nums ${acimaDoLimite ? estiloDoStatus[faltas.status].destaque : ''}`}>
             {horas(valor)}
           </span>{' '}
           <span className="text-sm text-muted-foreground">{acimaDoLimite ? 'excedida' : 'restantes'}</span>
@@ -90,7 +90,7 @@ function ResumoNotas({ notas, aviso, disciplina }: { notas: ProjecaoNotas | null
         <div>
           <p className="text-xs text-muted-foreground">Pontos garantidos</p>
           <p>
-            <span className="text-2xl font-semibold">{numero(notas.pontosGarantidos)}</span>{' '}
+            <span className="text-2xl font-semibold tabular-nums">{numero(notas.pontosGarantidos)}</span>{' '}
             <span className="text-sm text-muted-foreground">de {numero(disciplina.mediaMinima)}</span>
           </p>
         </div>

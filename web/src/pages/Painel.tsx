@@ -105,7 +105,7 @@ function Esqueleto() {
   return (
     <div className="grid gap-5 md:grid-cols-2" aria-busy="true" aria-label="Carregando disciplinas">
       {[0, 1].map((i) => (
-        <div key={i} className="h-80 animate-pulse rounded-2xl border border-border bg-card" />
+        <div key={i} className="h-80 motion-safe:animate-pulse rounded-2xl border border-border bg-card" />
       ))}
     </div>
   )

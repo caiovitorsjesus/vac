@@ -24,7 +24,7 @@ function Formulario({ disciplina, aoFechar, aoSalvar }: { disciplina: Disciplina
   const [data, setData] = useState(hoje())
   const [horas, setHoras] = useState('')
   const [observacao, setObservacao] = useState('')
-  const { erros, erroGeral, enviando, executar } = useEnvio(() => {
+  const { formulario, erros, erroGeral, enviando, executar } = useEnvio(() => {
     aoSalvar()
     aoFechar()
   })
@@ -42,7 +42,7 @@ function Formulario({ disciplina, aoFechar, aoSalvar }: { disciplina: Disciplina
   }
 
   return (
-    <form onSubmit={salvar} noValidate className="space-y-4">
+    <form ref={formulario} onSubmit={salvar} noValidate className="space-y-4">
       <ErroFormulario mensagem={erroGeral} />
       <div className="grid gap-4 sm:grid-cols-2">
         <Campo id="falta-data" rotulo="Data" type="date" max={hoje()} value={data}
