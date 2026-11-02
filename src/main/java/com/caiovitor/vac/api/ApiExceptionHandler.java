@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -30,6 +31,7 @@ import com.caiovitor.vac.domain.exception.DominioInvalidoException;
  *   <tr><td>erros de {@code @Valid}</td><td>400: campo ausente ou fora do formato, com a lista em {@code campos}</td></tr>
  *   <tr><td>{@link RecursoNaoEncontradoException}</td><td>404</td></tr>
  *   <tr><td>{@link ConfiguracaoIncompletaException}, {@link ConflitoException}</td><td>409: conflita com o estado salvo</td></tr>
+ *   <tr><td>{@link DataIntegrityViolationException}</td><td>409: restrição do banco, com mensagem genérica</td></tr>
  * </table>
  *
  * <p>Erros do próprio Spring (JSON malformado, método HTTP errado) são tratados pela classe herdada.
@@ -51,6 +53,16 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({ConfiguracaoIncompletaException.class, ConflitoException.class})
     public ProblemDetail tratarConflito(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    /**
+     * Rede de segurança para restrições do banco (chave estrangeira, NOT NULL) que escaparem das
+     * validações. A mensagem original expõe detalhes do banco, então o usuário recebe um texto genérico.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail tratarViolacaoDeIntegridade(DataIntegrityViolationException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                "A operação conflita com registros relacionados.");
     }
 
     /**

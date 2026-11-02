@@ -1,11 +1,15 @@
 package com.caiovitor.vac.api;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -164,6 +168,49 @@ class DisciplinaIntegracaoTest extends IntegracaoTest {
                         .replace("\"notaMaxima\": 10", "\"notaMaxima\": 5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.notaMaxima").value(5));
+    }
+
+    @Test
+    void deveExcluirDisciplina() throws Exception {
+        criar(CALCULO);
+
+        mockMvc.perform(delete("/api/disciplinas/1"))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/disciplinas/1"))
+                .andExpect(status().isNotFound());
+    }
+
+    // conta direto no banco: prova que o ON DELETE CASCADE não deixou faltas nem avaliações órfãs
+    @Test
+    void deveExcluirFaltasEAvaliacoesJuntoComADisciplina() throws Exception {
+        criar(CALCULO);
+        criar(CALCULO.replace("Cálculo I", "Física"));
+        criarAvaliacao("{\"nome\": \"P1\", \"pesoPercentual\": 40, \"nota\": 8}");
+        mockMvc.perform(post("/api/disciplinas/1/faltas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"data\": \"%s\", \"horas\": 2}".formatted(LocalDate.now().minusDays(1))))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(delete("/api/disciplinas/1"))
+                .andExpect(status().isNoContent());
+
+        assertEquals(0, contar("SELECT COUNT(*) FROM registro_falta"));
+        assertEquals(0, contar("SELECT COUNT(*) FROM avaliacao"));
+        assertEquals(1, contar("SELECT COUNT(*) FROM disciplina"));
+        mockMvc.perform(get("/api/disciplinas/2"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deveResponder404AoExcluirDisciplinaInexistente() throws Exception {
+        mockMvc.perform(delete("/api/disciplinas/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.detail").value("Disciplina 999 não encontrada."));
+    }
+
+    private int contar(String sql) {
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 
     private ResultActions atualizar(long id, String json) throws Exception {

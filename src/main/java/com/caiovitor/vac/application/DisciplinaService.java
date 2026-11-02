@@ -94,6 +94,18 @@ public class DisciplinaService {
     }
 
     /**
+     * Exclui a disciplina. As faltas e avaliações dela são excluídas pelo banco
+     * ({@code ON DELETE CASCADE}, migration V2), na mesma operação.
+     *
+     * @param id id da disciplina
+     * @throws RecursoNaoEncontradoException se a disciplina não existir
+     */
+    @Transactional
+    public void excluir(Long id) {
+        repository.delete(buscarEntidade(id));
+    }
+
+    /**
      * Busca a entidade da disciplina, para os services que precisam ligar registros a ela.
      *
      * @param id id da disciplina
