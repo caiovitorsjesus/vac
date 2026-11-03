@@ -4,6 +4,8 @@
 ![Maven](https://img.shields.io/badge/Maven-3.9+-C71A36?logo=apachemaven)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript)
 ![JUnit 5](https://img.shields.io/badge/JUnit-5-25A162?logo=junit5)
 ![Status](https://img.shields.io/badge/status-em%20constru%C3%A7%C3%A3o-yellow)
 
@@ -22,6 +24,7 @@ O vac é um organizador e simulador: as regras (limite de faltas, média mínima
 - **Viabilidade:** distingue "ainda dá para passar" de "a nota necessária passa da nota máxima"
 - **Validação no domínio:** dados inválidos (carga horária zero, nota acima da máxima, falta em data futura) são rejeitados na criação
 - **API REST:** cadastro, edição e exclusão de disciplinas, registro de faltas e avaliações, lançamento de notas e um status consolidado, com erros padronizados
+- **Interface web:** painel com a situação de cada disciplina, registro rápido de faltas e avaliações pelo card, e uma tela de detalhe com as listas e o lançamento de notas
 
 ## 📐 Regras de cálculo
 
@@ -90,11 +93,15 @@ Média final: **6,5**, igual a (7 + 6) / 2. Modelos de cálculo por instituiçã
 | Esquema versionado com Flyway | cada mudança no banco é um script SQL numerado; o Hibernate só valida que as entidades batem com ele |
 | Testes de integração no PostgreSQL real | os testes rodam no mesmo banco e com as mesmas migrations da aplicação, sem as diferenças de um banco em memória |
 | Credenciais fora do repositório | lidas de um `.env` local (ignorado pelo Git) ou de variáveis de ambiente no servidor |
+| A interface não calcula | todos os números da tela vêm do endpoint de status; as regras existem só no backend |
+| Proxy do Vite em vez de CORS | em desenvolvimento, o frontend chama `/api` na própria origem; o backend não precisa liberar outras origens |
+| Status com texto, ícone e cor | a cor nunca é a única informação, para quem não distingue cores ou usa leitor de tela |
 
 O raciocínio completo de cada etapa está nos [pull requests](https://github.com/caiovitorsjesus/vac/pulls?q=is%3Apr+is%3Amerged).
 
 ## 🛠️ Tecnologias
 
+**Backend**
 - **Java 21** (records, streams)
 - **Spring Boot 4.1** (Spring MVC, Bean Validation)
 - **Spring Data JPA** com **PostgreSQL 18**
@@ -103,9 +110,16 @@ O raciocínio completo de cada etapa está nos [pull requests](https://github.co
 - **Maven**
 - **JUnit 5** e **Testcontainers**
 
+**Frontend**
+- **React 19** com **TypeScript**
+- **Vite** (servidor de desenvolvimento e build)
+- **Tailwind CSS 4**
+- **React Router** para a navegação
+- **Vitest** para os testes
+
 ## ▶️ Como executar
 
-Pré-requisitos: JDK 21+, Maven 3.9+ e Docker.
+Pré-requisitos: JDK 21+, Maven 3.9+, Docker e Node.js 22+.
 
 ```bash
 git clone https://github.com/caiovitorsjesus/vac.git
@@ -127,18 +141,30 @@ mvn spring-boot:run   # sobe o PostgreSQL no Docker e a API em http://localhost:
 
 O `spring-boot:run` sobe o container do banco automaticamente (via `compose.yaml`), e o Flyway cria as tabelas na primeira execução. Os dados ficam num volume do Docker e persistem entre execuções.
 
+Com a API rodando, em outro terminal:
+
+```bash
+cd web
+npm install           # só na primeira vez
+npm run dev           # interface em http://localhost:5173
+```
+
+Em desenvolvimento, o Vite repassa as chamadas `/api` para a API na porta 8080.
+
 ## 🧪 Testes
 
 | Tipo | O que cobre | Precisa de |
 |---|---|---|
 | **Unitários** (`domain`) | validações das entidades e as calculadoras, incluindo os valores de fronteira de cada regra: limite exato de faltas, faixas de 70% e 90%, nota zero versus avaliação pendente, nota necessária igual à máxima | nada além do Java |
 | **Integração** (`api`) | cada endpoint de ponta a ponta, do HTTP ao banco: caminhos de sucesso, erros de validação (400), recursos inexistentes (404), conflitos (409) e os números do exemplo do guia no status | Docker rodando |
+| **Frontend** (`web`) | o cliente da API: tradução das respostas de erro em mensagens, campos inválidos, servidor indisponível e falta de conexão | Node.js |
 
 Os testes de integração sobem um PostgreSQL temporário com o [Testcontainers](https://testcontainers.com/), aplicam as mesmas migrations do Flyway e apagam o container no final.
 
 ```bash
 mvn test                                # todos
 mvn test -Dtest='com.caiovitor.vac.domain.**'   # só os unitários (sem Docker)
+cd web && npm test                      # frontend
 ```
 
 ## 🔌 API
@@ -201,6 +227,13 @@ src/main/java/com/caiovitor/vac
 └── infrastructure/   entidades JPA e repositórios
 
 src/main/resources/db/migration   scripts SQL do Flyway (V1__, V2__...)
+
+web/src
+├── api/              tipos dos dados e cliente HTTP (erros da API → mensagens)
+├── hooks/            carregamento das telas e envio de formulários
+├── pages/            painel, detalhe da disciplina e "não encontrada"
+├── components/       card, resumo, formulários, modais e seções
+└── toast/            mensagens de confirmação
 ```
 
 As dependências apontam para dentro: `domain` não conhece nenhuma outra camada.
@@ -213,7 +246,7 @@ As dependências apontam para dentro: `domain` não conhece nenhuma outra camada
 - [x] API REST com Spring Boot
 - [x] Persistência com PostgreSQL
 - [x] Testes de integração da API
-- [ ] Interface web
+- [x] Interface web
 - [ ] Modelos de cálculo por instituição (unidades, recuperação, exame final)
 
 ---

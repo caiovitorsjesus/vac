@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/*
+ * Tokens de design (Tailwind 4: a configuração fica no CSS).
+ * Cada --color-x vira utilitários como bg-x, text-x e border-x.
+ * O verde da marca (primary) é mais escuro que o verde do status "Seguro" (safe),
+ * para que um nunca seja confundido com o outro.
+ */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: oklch(0.985 0.006 160);
+  --color-foreground: oklch(0.22 0.03 170);
+  --color-card: oklch(1 0 0);
+  --color-muted: oklch(0.96 0.008 165);
+  --color-muted-foreground: oklch(0.5 0.02 170);
+  --color-border: oklch(0.91 0.012 165);
+
+  --color-primary: oklch(0.47 0.11 165);
+  --color-primary-hover: oklch(0.41 0.1 165);
+  --color-primary-foreground: oklch(0.99 0.01 160);
+  --color-secondary: oklch(0.95 0.025 165);
+
+  /* status de faltas: fundo do selo, texto do selo e cor da barra */
+  --color-safe: oklch(0.93 0.09 140);
+  --color-safe-foreground: oklch(0.38 0.11 140);
+  --color-safe-bar: oklch(0.72 0.17 140);
+  --color-warn: oklch(0.95 0.09 95);
+  --color-warn-foreground: oklch(0.43 0.09 80);
+  --color-warn-bar: oklch(0.83 0.16 90);
+  --color-crit: oklch(0.93 0.07 55);
+  --color-crit-foreground: oklch(0.47 0.15 45);
+  --color-crit-bar: oklch(0.72 0.17 50);
+  --color-over: oklch(0.93 0.05 25);
+  --color-over-foreground: oklch(0.48 0.18 27);
+  --color-over-bar: oklch(0.6 0.21 27);
+
+  --shadow-card: 0 1px 2px oklch(0.3 0.05 165 / 6%), 0 8px 24px -12px oklch(0.3 0.05 165 / 14%);
+}
+
+@layer base {
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  /* o Tailwind 4 deixou os botões com o cursor padrão (seta); aqui eles voltam a indicar que são clicáveis */
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  /* anel de foco único para navegação por teclado (não aparece no clique do mouse) */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
